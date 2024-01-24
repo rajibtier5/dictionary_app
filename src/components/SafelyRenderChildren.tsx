@@ -1,4 +1,4 @@
-import React, { Children, FC, ReactElement, ReactNode } from "react";
+import { Children, FC, ReactNode } from "react";
 
 type SafelyRenderChildrenProps = {
 	children: ReactNode;
@@ -6,7 +6,7 @@ type SafelyRenderChildrenProps = {
 
 const SafelyRenderChildren: FC<SafelyRenderChildrenProps> = ({ children }) => {
 	const count = Children.count(children);
-	if (count > 5000) {
+	if (count > 2500) {
 		return <span>You're attempting to render too many children</span>;
 	}
 

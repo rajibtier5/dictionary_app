@@ -3,7 +3,7 @@ import styles from "../styles/SearchControl.module.css";
 
 type SearchControlProps = {
 	searchKey: string;
-	onChangeSearchControl: (event: string) => void;
+	onChangeSearchControl: (value: string) => void;
 };
 
 const SearchControl: FC<SearchControlProps> = ({

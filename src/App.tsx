@@ -7,7 +7,7 @@ import "./App.css";
 
 function App() {
 	const [searchKey, setSearchKey] = useState<string>("");
-	const debouncedSearchKey = useDebounce<string>(searchKey, 500);
+	const debouncedSearchKey = useDebounce<string>(searchKey?.trim(), 500);
 	const dictionaryData = useDictionaryData(debouncedSearchKey);
 
 	return (

@@ -1,4 +1,4 @@
-import { FC, ReactElement, useEffect, useRef, useState } from "react";
+import { FC, useRef, useMemo } from "react";
 import { useScrollPosition } from "../hooks/useScrollPosition";
 import ListItem from "./ListItem";
 import SafelyRenderChildren from "./SafelyRenderChildren";
@@ -6,31 +6,38 @@ import styles from "../styles/List.module.css";
 
 export interface ListProps {
 	items: string[];
-	children?: ReactElement;
+	listHeight?: number;
+	showNumberOfItems?: number;
 }
 
-const List: FC<ListProps> = ({ items, children }) => {
+const List: FC<ListProps> = ({
+	items = [],
+	listHeight = 500,
+	showNumberOfItems = 20,
+}) => {
 	const ref = useRef(null);
-	const scrollTopPosition = useScrollPosition(ref);
-	const [startIndex, setStartIndex] = useState(0);
-	const [endIndex, setEndIndex] = useState(2500);
-	const lengthOfItems = items.length;
+	const scrollTopPosition = useScrollPosition(ref, 500);
 
-	useEffect(() => {
-		// convert scrollPosition to the actual list element
-		const currentElementIndex = Math.floor(scrollTopPosition / 30);
-		setStartIndex(Math.max(0, currentElementIndex - 30));
-		setEndIndex(Math.min(currentElementIndex + 30, lengthOfItems));
-
-		console.log(startIndex, endIndex);
-	}, [scrollTopPosition, lengthOfItems]);
+	const virtualList = useMemo(() => {
+		const currentElementIndex = Math.floor(scrollTopPosition / listHeight);
+		const startIndex = Math.max(0, currentElementIndex);
+		const endIndex = Math.min(startIndex + showNumberOfItems, items.length);
+		return items.slice(startIndex, endIndex);
+	}, [items, listHeight, scrollTopPosition, showNumberOfItems]);
 
 	return (
 		<div
-			className={styles.scrollWrapper}
 			ref={ref}
+			className={styles.scrollWrapper}
+			style={{ height: `${listHeight}px` }}
 		>
-			<ul className={styles.listWrapper}>
+			<ul
+				className={styles.listWrapper}
+				style={{
+					height: `${items.length * 30}px`,
+					top: `${scrollTopPosition}px`,
+				}}
+			>
 				{/**
 				 * Note: `SafelyRenderChildren` should NOT be removed while solving
 				 * this interview. This prevents rendering too many list items and
@@ -39,8 +46,8 @@ const List: FC<ListProps> = ({ items, children }) => {
 				 * time during virtualization.
 				 */}
 				<SafelyRenderChildren>
-					{items.slice(startIndex, endIndex).map((word) => (
-						<ListItem key={word}>{word}</ListItem>
+					{virtualList.map((word, index) => (
+						<ListItem key={index}>{word}</ListItem>
 					))}
 				</SafelyRenderChildren>
 			</ul>

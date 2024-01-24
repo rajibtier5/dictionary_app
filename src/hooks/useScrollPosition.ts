@@ -1,41 +1,29 @@
-import {
-	RefObject,
-	useCallback,
-	useLayoutEffect,
-	useRef,
-	useState,
-} from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 
-export function useScrollPosition(
+export const useScrollPosition = (
 	element: RefObject<HTMLElement>,
-	wait: number = 0
-) {
-	const [position, setPosition] = useState(0);
-	const throttleTimeout: any = useRef(null);
+	delay: number
+): number => {
+	const [scrollTopPosition, setScrollTopPosition] = useState<number>(0);
+	const timer = useRef<any>(null);
+	const refereedElement = element.current;
 
-	const callBack = useCallback(() => {
-		element && element.current && setPosition(element.current.scrollTop);
-		throttleTimeout.current = null;
-	}, [element]);
-
-	useLayoutEffect(() => {
-		const currentElement = element.current;
-		const handleScroll = () => {
-			if (wait) {
-				if (throttleTimeout === null) {
-					throttleTimeout.current = setTimeout(callBack, wait);
-				}
-			} else {
-				callBack();
-			}
+	useEffect(() => {
+		const updatePosition = () => {
+			timer.current = setTimeout(
+				() =>
+					refereedElement && setScrollTopPosition(refereedElement.scrollTop),
+				delay || 500
+			);
 		};
-		currentElement && currentElement.addEventListener("scroll", handleScroll);
+		refereedElement &&
+			refereedElement.addEventListener("scroll", updatePosition);
 		return () => {
-			clearTimeout(throttleTimeout.current);
-			currentElement &&
-				currentElement.removeEventListener("scroll", handleScroll);
+			refereedElement &&
+				refereedElement.removeEventListener("scroll", updatePosition);
+			clearTimeout(timer.current);
 		};
-	}, [callBack, element, wait]);
+	}, [delay, refereedElement]);
 
-	return position;
-}
+	return scrollTopPosition;
+};
